@@ -15,7 +15,7 @@ namespace P3AddNewFunctionalityDotNetCore.Models.ViewModels
 
         public string Details { get; set; }
 
-        [Required(ErrorMessage = "ErrorMissingQuantity")]
+        [Required(ErrorMessage = "ErrorMissingStock")]
         [RegularExpression(@"^\d+$", ErrorMessage = "StockNotAnInteger")]
         [Range(1, int.MaxValue, ErrorMessage = "StockNotGreaterThanZero")]
         public string Stock { get; set; }
