@@ -87,5 +87,36 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             // Assert
             Assert.Null(actualProduct);
         }
+
+        [Fact]
+        public async Task GetProduct_ShouldReturnProduct_WhenProductExists()
+        {
+            //Arrange
+            var productId = 1;
+            var expectedProduct = new Product { Id = productId, Name = "Test Product" };
+            _productRepositoryMock.Setup(repo => repo.GetProduct(productId)).ReturnsAsync(expectedProduct);
+
+            //Act
+            var actualProduct = await _productService.GetProduct(productId);
+
+            //Assert
+            Assert.NotNull(actualProduct);
+            Assert.Equal(expectedProduct.Id, actualProduct.Id);
+            Assert.Equal(expectedProduct.Name,actualProduct.Name);
+        }
+
+        [Fact]
+        public async Task GetProduct_ShouldReturnNull_WhenProductDoesntExist()
+        {
+            //Arrange
+            var productId = 1;
+            _productRepositoryMock.Setup(repo => repo.GetProduct(productId)).ReturnsAsync((Product)null);
+
+            //Act
+            var actualProduct = await (_productService.GetProduct(productId));
+
+            //Assert
+            Assert.Null(actualProduct);
+        }
     }
 }
