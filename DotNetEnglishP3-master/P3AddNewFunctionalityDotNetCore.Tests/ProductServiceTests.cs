@@ -118,5 +118,26 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             //Assert
             Assert.Null(actualProduct);
         }
+
+        [Fact]
+        public async Task GetProduct_ShouldReturnAllProducts()
+        {
+            // Arrange
+            var expectedProducts = new List<Product>
+        {
+            new Product { Id = 1, Quantity = 10, Price = 100.0, Name = "Product 1", Description = "Description 1", Details = "Details 1" },
+            new Product { Id = 2, Quantity = 20, Price = 200.0, Name = "Product 2", Description = "Description 2", Details = "Details 2" }
+        };
+            _productRepositoryMock.Setup(repo => repo.GetProduct()).ReturnsAsync(expectedProducts);
+
+            // Act
+            var actualProducts = await _productService.GetProduct();
+
+            // Assert
+            Assert.NotNull(actualProducts);
+            Assert.Equal(expectedProducts.Count, actualProducts.Count);
+            Assert.Equal(expectedProducts[0].Id, actualProducts[0].Id);
+            Assert.Equal(expectedProducts[0].Name, actualProducts[0].Name);
+        }
     }
 }
