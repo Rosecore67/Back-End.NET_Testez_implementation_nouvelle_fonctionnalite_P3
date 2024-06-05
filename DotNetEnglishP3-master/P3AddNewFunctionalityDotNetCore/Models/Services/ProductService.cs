@@ -111,12 +111,32 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
 
         public void DeleteProduct(int id)
         {
-            // TODO what happens if a product has been added to a cart and has been later removed from the inventory ?
-            // delete the product form the cart by using the specific method
-            // => the choice is up to the student
-            _cart.RemoveLine(GetProductById(id));
+            try
+            {
+                var product = GetProductById(id);
 
-            _productRepository.DeleteProduct(id);
+                if (product == null) 
+                {
+                    throw new ArgumentException($"Product : {product.Name} , {product.Id} => doesn't exist in the inventory");
+                }
+
+                if (_cart != null)
+                {
+                    _cart.RemoveLine(product);
+                }
+
+                _productRepository.DeleteProduct(id);
+
+            }
+            catch (ArgumentNullException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"An error occured while deleting the product: {ex.Message}");
+            } 
+
         }
     }
 }
