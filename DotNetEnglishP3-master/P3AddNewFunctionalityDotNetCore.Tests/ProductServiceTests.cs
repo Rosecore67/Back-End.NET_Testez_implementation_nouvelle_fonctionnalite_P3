@@ -21,16 +21,16 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         private readonly Mock<IProductRepository> _productRepositoryMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IStringLocalizer<ProductService>> _localizerMock;
-        private readonly Mock<ICart> _cartMock;
+        private readonly Cart _cart;
         
         public ProductServiceTests()
         {
             _productRepositoryMock = new Mock<IProductRepository>();
             _orderRepositoryMock = new Mock<IOrderRepository>();
             _localizerMock = new Mock<IStringLocalizer<ProductService>>();
-            _cartMock = new Mock<ICart>();
+            _cart = new Cart();
             _productService = new ProductService(
-                _cartMock.Object,
+                _cart,
                 _productRepositoryMock.Object,
                 _orderRepositoryMock.Object,
                 _localizerMock.Object);
@@ -138,6 +138,21 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             Assert.Equal(expectedProducts.Count, actualProducts.Count);
             Assert.Equal(expectedProducts[0].Id, actualProducts[0].Id);
             Assert.Equal(expectedProducts[0].Name, actualProducts[0].Name);
+        }
+
+        [Fact]
+        public void UpdateProductQuantities_ShouldUpdateStocks()
+        {
+            //Arrange
+            _cart.AddItem(new Product { Id = 1},5);
+            _cart.AddItem(new Product { Id = 2},3);
+
+            //Act
+            _productService.UpdateProductQuantities();
+
+            //Assert
+            _productRepositoryMock.Verify(repo => repo.UpdateProductStocks(1,5),Times.Once());
+            _productRepositoryMock.Verify(repo => repo.UpdateProductStocks(2,3),Times.Once());
         }
     }
 }
