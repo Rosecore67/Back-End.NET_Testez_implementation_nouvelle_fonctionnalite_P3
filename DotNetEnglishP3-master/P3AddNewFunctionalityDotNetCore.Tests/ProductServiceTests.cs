@@ -48,14 +48,44 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             _productRepositoryMock.Setup(repo => repo.GetAllProducts()).Returns(testProducts);
 
             // Act
-            var oneProductTest = _productService.GetAllProducts();
+            var products = _productService.GetAllProducts();
 
             // Assert
-            Assert.NotNull(oneProductTest);
-            Assert.Equal(testProducts.Count, oneProductTest.Count);
-            Assert.Equal(testProducts[1].Id, oneProductTest[1].Id);
-            Assert.Equal(testProducts[1].Name, oneProductTest[1].Name);
+            Assert.NotNull(products);
+            Assert.Equal(testProducts.Count, products.Count);
+            Assert.Equal(testProducts[1].Id, products[1].Id);
+            Assert.Equal(testProducts[1].Name, products[1].Name);
         }
 
+        [Fact]
+        public void GetProductById_ShouldReturnProduct_WhenProductExists()
+        {
+            //Arrange
+            var productId = 1;
+            var expectedProduct = new Product { Id = productId, Name = "Test product" };
+            _productRepositoryMock.Setup(repo => repo.GetAllProducts()).Returns(new List<Product> { expectedProduct });
+
+            //Act
+            var actualProduct = _productService.GetProductById(productId);
+
+            //Assert
+            Assert.NotNull(actualProduct);
+            Assert.Equal(expectedProduct.Id, actualProduct.Id);
+            Assert.Equal(expectedProduct.Name, actualProduct.Name);
+        }
+
+        [Fact]
+        public void GetProductById_ShouldReturnNull_WhenProductDoesNotExist()
+        {
+            // Arrange
+            var productId = 1;
+            _productRepositoryMock.Setup(repo => repo.GetAllProducts()).Returns(new List<Product>());
+
+            // Act
+            var actualProduct = _productService.GetProductById(productId);
+
+            // Assert
+            Assert.Null(actualProduct);
+        }
     }
 }
