@@ -52,6 +52,7 @@
     <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.11" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="OpenCover" Version="4.7.1221" />
   </ItemGroup>
 
 </Project>

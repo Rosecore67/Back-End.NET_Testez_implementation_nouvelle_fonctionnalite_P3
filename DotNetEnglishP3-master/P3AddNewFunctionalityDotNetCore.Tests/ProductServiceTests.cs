@@ -143,16 +143,45 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         [Fact]
         public void UpdateProductQuantities_ShouldUpdateStocks()
         {
-            //Arrange
-            _cart.AddItem(new Product { Id = 1},5);
-            _cart.AddItem(new Product { Id = 2},3);
+            // Arrange
+            var product1 = new Product { Id = 1, Quantity = 10 };
+            var product2 = new Product { Id = 2, Quantity = 20 };
 
-            //Act
+            _cart.AddItem(product1, 5);
+            _cart.AddItem(product2, 3);
+
+            // Capture the initial state
+            var initialLines = _cart.Lines.ToList();
+            Assert.Equal(2, initialLines.Count);
+            Assert.Equal(5, initialLines.First(l => l.Product.Id == 1).Quantity);
+            Assert.Equal(3, initialLines.First(l => l.Product.Id == 2).Quantity);
+
+            // Act
             _productService.UpdateProductQuantities();
 
-            //Assert
-            _productRepositoryMock.Verify(repo => repo.UpdateProductStocks(1,5),Times.Once());
-            _productRepositoryMock.Verify(repo => repo.UpdateProductStocks(2,3),Times.Once());
+            // Assert
+            _productRepositoryMock.Verify(repo => repo.UpdateProductStocks(1, 5), Times.Once);
+            _productRepositoryMock.Verify(repo => repo.UpdateProductStocks(2, 3), Times.Once);
+        }
+
+        [Fact]
+        public void SaveProduct_ShouldCallRepositorySave()
+        {
+            // Arrange
+            var productViewModel = new ProductViewModel
+            {
+                Name = "Product 1",
+                Price = "100,00",
+                Stock = "10",
+                Description = "Description 1",
+                Details = "Details 1"
+            };
+
+            // Act
+            _productService.SaveProduct(productViewModel);
+
+            // Assert
+            _productRepositoryMock.Verify(repo => repo.SaveProduct(It.IsAny<Product>()), Times.Once);
         }
     }
 }
