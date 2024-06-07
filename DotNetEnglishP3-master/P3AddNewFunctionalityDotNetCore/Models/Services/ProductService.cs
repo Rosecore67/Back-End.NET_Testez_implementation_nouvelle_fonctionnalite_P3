@@ -98,10 +98,19 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
 
         private static Product MapToProductEntity(ProductViewModel product)
         {
+            double price;
+            bool isPriceParsed = double.TryParse(product.Price, NumberStyles.Any, CultureInfo.InvariantCulture,out price)||
+                double.TryParse(product.Price.Replace(',','.'),NumberStyles.Any,CultureInfo.InvariantCulture,out price);
+
+            if (!isPriceParsed)
+            {
+                throw new FormatException("Invalid price format.");
+            }
+
             Product productEntity = new Product
             {
                 Name = product.Name,
-                Price = double.Parse(product.Price),
+                Price = price,
                 Quantity = Int32.Parse(product.Stock),
                 Description = product.Description,
                 Details = product.Details
