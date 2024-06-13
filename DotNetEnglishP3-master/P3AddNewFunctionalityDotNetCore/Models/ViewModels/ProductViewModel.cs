@@ -24,8 +24,8 @@ namespace P3AddNewFunctionalityDotNetCore.Models.ViewModels
 
         [Required(ErrorMessage = "ErrorMissingPrice")]
         [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "PriceNotANumber")]
-        //[Range(0.01, double.MaxValue, ErrorMessage = "PriceNotGreaterThanZero")]
-        [DecimalRange(0.01, double.MaxValue, ErrorMessage = "PriceNotGreaterThanZero")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "PriceNotGreaterThanZero")]
+        //[DecimalRange(0.01, double.MaxValue, ErrorMessage = "PriceNotGreaterThanZero")]
         public string Price { get; set; }
     }
 }

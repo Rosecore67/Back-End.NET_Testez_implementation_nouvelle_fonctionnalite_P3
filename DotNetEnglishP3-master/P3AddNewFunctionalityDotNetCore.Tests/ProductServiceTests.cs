@@ -165,22 +165,33 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         }
 
         [Fact]
-        public void SaveProduct_ShouldCallRepositorySave()
+        public void SaveProduct_ShouldConvertViewModelToEntityAndSave()
         {
             // Arrange
             var productViewModel = new ProductViewModel
             {
-                Name = "Product 1",
-                Price = "100,00",
+                Name = "Test Product",
+                Price = "100.00", // Utilisation d'un format de prix valide et invariant pour ce test
                 Stock = "10",
-                Description = "Description 1",
-                Details = "Details 1"
+                Description = "Test Description",
+                Details = "Test Details"
             };
+
+            Product capturedProduct = null;
+            _productRepositoryMock.Setup(repo => repo.SaveProduct(It.IsAny<Product>()))
+                .Callback<Product>(p => capturedProduct = p);
 
             // Act
             _productService.SaveProduct(productViewModel);
 
             // Assert
+            Assert.NotNull(capturedProduct);
+            Assert.Equal("Test Product", capturedProduct.Name);
+            Assert.Equal(100.00, capturedProduct.Price); // Vérifier que le prix est correctement converti
+            Assert.Equal(10, capturedProduct.Quantity);
+            Assert.Equal("Test Description", capturedProduct.Description);
+            Assert.Equal("Test Details", capturedProduct.Details);
+
             _productRepositoryMock.Verify(repo => repo.SaveProduct(It.IsAny<Product>()), Times.Once);
         }
     }

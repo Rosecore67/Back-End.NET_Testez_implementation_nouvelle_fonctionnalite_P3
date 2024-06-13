@@ -56,8 +56,6 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Repositories
         {
             if (product != null)
             {
-               
-
                 _context.Product.Add(product);
                 _context.SaveChanges();
             }

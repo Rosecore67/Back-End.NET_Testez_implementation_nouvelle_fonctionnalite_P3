@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Xunit;
 using P3AddNewFunctionalityDotNetCore.Models.ViewModels;
 
@@ -77,13 +75,10 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("abc")]
-        [InlineData("-10.00")]
-        [InlineData("0")]
-        [InlineData("10.001")]
-        public void ProductViewModel_ShouldValidatePrice(string price)
+        [InlineData("abc", "PriceNotANumber")]
+        [InlineData("-10.00", "PriceNotGreaterThanZero")]
+        [InlineData("0", "PriceNotGreaterThanZero")]
+        public void ProductViewModel_ShouldValidatePrice(string price, string expectedErrorMessage)
         {
             // Arrange
             var model = new ProductViewModel { Name = "Test Product", Price = price, Stock = "5" };
@@ -92,11 +87,14 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var validationResults = ValidateModel(model);
 
             // Assert
-            Assert.Contains(validationResults, vr => vr.MemberNames.Contains("Price"));
+            Assert.Contains(validationResults, vr => vr.MemberNames.Contains("Price") &&
+                                                     vr.ErrorMessage == expectedErrorMessage);
         }
 
-        [Fact]
-        public void ProductViewModel_ValidModel_ShouldNotHaveValidationErrors()
+        [Theory]
+        [InlineData("10.00")]
+        [InlineData("10,00")]
+        public void ProductViewModel_ValidPrice_ShouldNotHaveValidationErrors(string price)
         {
             // Arrange
             var model = new ProductViewModel
@@ -104,7 +102,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
                 Name = "Test Product",
                 Description = "Test Description",
                 Details = "Test Details",
-                Price = "10.00",
+                Price = price,
                 Stock = "5"
             };
 

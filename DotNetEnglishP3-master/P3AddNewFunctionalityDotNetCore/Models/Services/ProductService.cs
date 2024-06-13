@@ -41,7 +41,7 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
                 {
                     Id = product.Id,
                     Stock = product.Quantity.ToString(),
-                    Price = product.Price.ToString(CultureInfo.InvariantCulture),
+                    Price = product.Price.ToString(),
                     Name = product.Name,
                     Description = product.Description,
                     Details = product.Details
@@ -99,12 +99,14 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
         private static Product MapToProductEntity(ProductViewModel product)
         {
             double price;
-            bool isPriceParsed = double.TryParse(product.Price, NumberStyles.Any, CultureInfo.InvariantCulture,out price)||
-                double.TryParse(product.Price.Replace(',','.'),NumberStyles.Any,CultureInfo.InvariantCulture,out price);
 
-            if (!isPriceParsed)
+            if (product.Price.Contains(","))
             {
-                throw new FormatException("Invalid price format.");
+                price = double.Parse(product.Price.Replace(",", "."));
+            }
+            else
+            {
+                price = double.Parse(product.Price);
             }
 
             Product productEntity = new Product
