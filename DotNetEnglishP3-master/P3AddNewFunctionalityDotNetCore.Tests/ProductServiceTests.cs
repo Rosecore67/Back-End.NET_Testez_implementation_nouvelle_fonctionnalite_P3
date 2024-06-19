@@ -22,7 +22,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IStringLocalizer<ProductService>> _localizerMock;
         private readonly Cart _cart;
-        
+
         public ProductServiceTests()
         {
             _productRepositoryMock = new Mock<IProductRepository>();
@@ -40,7 +40,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         public void GetAllProducts_ReturnAllProducts()
         {
             // Arrange
-            var testProducts = new List<Product> 
+            var testProducts = new List<Product>
             {
                 new Product { Id = 1, Quantity = 20, Price = 55.45, Name = "Enceinte Stéréo", Description ="Haut-parleurs", Details = "Haute qualité"},
                 new Product { Id = 2, Quantity = 75, Price = 99, Name = "Livre", Description = "Livre rare", Details = "1ére édition"}
@@ -102,7 +102,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             //Assert
             Assert.NotNull(actualProduct);
             Assert.Equal(expectedProduct.Id, actualProduct.Id);
-            Assert.Equal(expectedProduct.Name,actualProduct.Name);
+            Assert.Equal(expectedProduct.Name, actualProduct.Name);
         }
 
         [Fact]
@@ -164,14 +164,15 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             _productRepositoryMock.Verify(repo => repo.UpdateProductStocks(2, 3), Times.Once);
         }
 
-        [Fact]
-        public void SaveProduct_ShouldConvertViewModelToEntityAndSave()
+        [Theory]
+        [InlineData("100.00", "en-US")]
+        public void SaveProduct_ShouldConvertViewModelToEntityAndSave(string price, string culture)
         {
             // Arrange
             var productViewModel = new ProductViewModel
             {
                 Name = "Test Product",
-                Price = "100.00", // Utilisation d'un format de prix valide et invariant pour ce test
+                Price = price,
                 Stock = "10",
                 Description = "Test Description",
                 Details = "Test Details"
@@ -181,18 +182,33 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             _productRepositoryMock.Setup(repo => repo.SaveProduct(It.IsAny<Product>()))
                 .Callback<Product>(p => capturedProduct = p);
 
-            // Act
-            _productService.SaveProduct(productViewModel);
+            // Change the current culture to the specified culture
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUICulture = CultureInfo.CurrentUICulture;
+            CultureInfo.CurrentCulture = new CultureInfo(culture);
+            CultureInfo.CurrentUICulture = new CultureInfo(culture);
 
-            // Assert
-            Assert.NotNull(capturedProduct);
-            Assert.Equal("Test Product", capturedProduct.Name);
-            Assert.Equal(100.00, capturedProduct.Price); // Vérifier que le prix est correctement converti
-            Assert.Equal(10, capturedProduct.Quantity);
-            Assert.Equal("Test Description", capturedProduct.Description);
-            Assert.Equal("Test Details", capturedProduct.Details);
+            try
+            {
+                // Act
+                _productService.SaveProduct(productViewModel);
 
-            _productRepositoryMock.Verify(repo => repo.SaveProduct(It.IsAny<Product>()), Times.Once);
+                // Assert
+                Assert.NotNull(capturedProduct);
+                Assert.Equal("Test Product", capturedProduct.Name);
+                Assert.Equal(100.00, capturedProduct.Price);
+                Assert.Equal(10, capturedProduct.Quantity);
+                Assert.Equal("Test Description", capturedProduct.Description);
+                Assert.Equal("Test Details", capturedProduct.Details);
+
+                _productRepositoryMock.Verify(repo => repo.SaveProduct(It.IsAny<Product>()), Times.Once);
+            }
+            finally
+            {
+                // Restore the original culture
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUICulture;
+            }
         }
     }
 }

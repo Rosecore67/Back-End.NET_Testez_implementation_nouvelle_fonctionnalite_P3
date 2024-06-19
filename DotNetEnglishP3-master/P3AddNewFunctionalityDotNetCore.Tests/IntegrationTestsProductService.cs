@@ -27,7 +27,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
                 .Options;
         }
 
-        private (ProductService, P3Referential) InitializeServices()
+        private (ProductService, P3Referential, Cart) InitializeServices()
         {
             var ctx = new P3Referential(_options, _configuration);
             var productRepository = new ProductRepository(ctx);
@@ -35,7 +35,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var cart = new Cart();
             var productService = new ProductService(cart, productRepository, orderRepository, _localizer);
 
-            return (productService, ctx);
+            return (productService, ctx, cart);
         }
 
         private ProductViewModel CreateTestProductViewModel(string name, string price = "150", string stock = "1")
@@ -53,7 +53,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         [Fact]
         public async Task SaveNewProduct()
         {
-            var (productService, ctx) = InitializeServices();
+            var (productService, ctx, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product from CREATE integration test");
 
             int initialCount = await ctx.Product.CountAsync();
@@ -75,7 +75,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         [Fact]
         public async Task DeleteProduct()
         {
-            var (productService, ctx) = InitializeServices();
+            var (productService, ctx, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product from DELETE integration test");
 
             productService.SaveProduct(productViewModel);
@@ -98,7 +98,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         [Fact]
         public async Task UpdateProductStock()
         {
-            var (productService, ctx) = InitializeServices();
+            var (productService, ctx, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product for UPDATE integration test", "150", "10");
 
             // Step 1: Create the product
@@ -108,7 +108,6 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             Assert.NotNull(product);
 
             // Step 2: Add the product to the cart and update quantities
-            var cart = new Cart();
             cart.AddItem(product, 9);
             productService.UpdateProductQuantities();
 
@@ -125,7 +124,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         [Fact]
         public async Task GetProductInfo()
         {
-            var (productService, ctx) = InitializeServices();
+            var (productService, ctx, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product for GET integration test");
 
             productService.SaveProduct(productViewModel);
