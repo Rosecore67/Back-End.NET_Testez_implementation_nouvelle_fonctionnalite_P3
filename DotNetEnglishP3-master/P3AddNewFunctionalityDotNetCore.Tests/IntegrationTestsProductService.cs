@@ -1,14 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
-using P3AddNewFunctionalityDotNetCore.Controllers;
 using P3AddNewFunctionalityDotNetCore.Data;
 using P3AddNewFunctionalityDotNetCore.Models;
-using P3AddNewFunctionalityDotNetCore.Models.Entities;
 using P3AddNewFunctionalityDotNetCore.Models.Repositories;
 using P3AddNewFunctionalityDotNetCore.Models.Services;
 using P3AddNewFunctionalityDotNetCore.Models.ViewModels;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,13 +26,13 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
         private (ProductService, P3Referential, Cart) InitializeServices()
         {
-            var ctx = new P3Referential(_options, _configuration);
-            var productRepository = new ProductRepository(ctx);
-            var orderRepository = new OrderRepository(ctx);
+            var dbContext = new P3Referential(_options, _configuration);
+            var productRepository = new ProductRepository(dbContext);
+            var orderRepository = new OrderRepository(dbContext);
             var cart = new Cart();
             var productService = new ProductService(cart, productRepository, orderRepository, _localizer);
 
-            return (productService, ctx, cart);
+            return (productService, dbContext, cart);
         }
 
         private ProductViewModel CreateTestProductViewModel(string name, string price = "150", string stock = "1")
@@ -53,83 +50,86 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         [Fact]
         public async Task SaveNewProduct()
         {
-            var (productService, ctx, cart) = InitializeServices();
+            var (productService, dbContext, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product from CREATE integration test");
 
-            int initialCount = await ctx.Product.CountAsync();
+            int initialCount = await dbContext.Product.CountAsync();
 
             // Act
             productService.SaveProduct(productViewModel);
 
             // Assert
-            Assert.Equal(initialCount + 1, await ctx.Product.CountAsync());
+            Assert.Equal(initialCount + 1, await dbContext.Product.CountAsync());
 
-            var product = await ctx.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
+            var product = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.NotNull(product);
 
             // Clean up
-            ctx.Product.Remove(product);
-            await ctx.SaveChangesAsync();
+            dbContext.Product.Remove(product);
+            await dbContext.SaveChangesAsync();
         }
 
         [Fact]
         public async Task DeleteProduct()
         {
-            var (productService, ctx, cart) = InitializeServices();
+            var (productService, dbContext, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product from DELETE integration test");
 
             productService.SaveProduct(productViewModel);
 
-            var product = await ctx.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
+            var product = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.NotNull(product);
 
-            int initialCount = await ctx.Product.CountAsync();
+            int initialCount = await dbContext.Product.CountAsync();
 
             // Act
             productService.DeleteProduct(product.Id);
 
             // Assert
-            Assert.Equal(initialCount - 1, await ctx.Product.CountAsync());
+            Assert.Equal(initialCount - 1, await dbContext.Product.CountAsync());
 
-            var deletedProduct = await ctx.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
+            var deletedProduct = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.Null(deletedProduct);
         }
 
         [Fact]
         public async Task UpdateProductStock()
         {
-            var (productService, ctx, cart) = InitializeServices();
+            // Arrange
+            var (productService, dbContext, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product for UPDATE integration test", "150", "10");
 
             // Step 1: Create the product
             productService.SaveProduct(productViewModel);
 
-            var product = await ctx.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
+            var product = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.NotNull(product);
 
+            // Act
             // Step 2: Add the product to the cart and update quantities
             cart.AddItem(product, 9);
             productService.UpdateProductQuantities();
 
+            // Assert
             // Step 3: Retrieve the product again to verify the update
-            var updatedProduct = await ctx.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
+            var updatedProduct = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.NotNull(updatedProduct);
             Assert.Equal(1, updatedProduct.Quantity); // 10 initial stock - 9 removed by cart
 
             // Clean up
-            ctx.Product.Remove(updatedProduct);
-            await ctx.SaveChangesAsync();
+            dbContext.Product.Remove(updatedProduct);
+            await dbContext.SaveChangesAsync();
         }
 
         [Fact]
         public async Task GetProductInfo()
         {
-            var (productService, ctx, cart) = InitializeServices();
+            var (productService, dbContext, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product for GET integration test");
 
             productService.SaveProduct(productViewModel);
 
-            var product = await ctx.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
+            var product = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.NotNull(product);
 
             // Act
@@ -144,8 +144,8 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             Assert.Equal(product.Price.ToString(System.Globalization.CultureInfo.InvariantCulture), productInfo.Price);
 
             // Clean up
-            ctx.Product.Remove(product);
-            await ctx.SaveChangesAsync();
+            dbContext.Product.Remove(product);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

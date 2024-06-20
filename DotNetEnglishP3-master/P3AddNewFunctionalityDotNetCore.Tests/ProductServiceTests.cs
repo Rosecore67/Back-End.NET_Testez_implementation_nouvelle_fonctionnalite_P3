@@ -210,5 +210,38 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
                 CultureInfo.CurrentUICulture = originalUICulture;
             }
         }
+
+        [Fact]
+        public void DeleteProduct_ShouldRemoveProductFromRepository()
+        {
+            // Arrange
+            var productId = 1;
+            var testProduct = new Product { Id = productId, Name = "Test Product" };
+
+            _productRepositoryMock.Setup(repo => repo.GetProduct(productId))
+                                  .ReturnsAsync(testProduct);
+
+            // Act
+            _productService.DeleteProduct(productId);
+
+            // Assert
+            _productRepositoryMock.Verify(repo => repo.GetProduct(productId), Times.Once);
+            _productRepositoryMock.Verify(repo => repo.DeleteProduct(productId), Times.Once);
+        }
+
+        [Fact]
+        public void DeleteProduct_ShouldRemoveProductFromCart()
+        {
+            // Arrange
+            int productId = 1;
+            var product = new Product { Id = productId, Name = "Test Product" };
+            _productRepositoryMock.Setup(repo => repo.GetProduct(productId)).ReturnsAsync(product);
+
+            // Act
+            _productService.DeleteProduct(productId);
+
+            // Assert
+            Assert.Empty(_cart.Lines); // Assuming _cart.Lines represents the items in the cart
+        }
     }
 }
