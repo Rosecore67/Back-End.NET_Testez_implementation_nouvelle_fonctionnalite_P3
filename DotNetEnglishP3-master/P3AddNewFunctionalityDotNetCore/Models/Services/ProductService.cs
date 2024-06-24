@@ -126,28 +126,23 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
             {
                 var product = GetProductById(id);
 
-                if (product == null) 
+                if (product == null)
                 {
-                    throw new ArgumentException($"Product : {product.Name} , {product.Id} => doesn't exist in the inventory");
+                    throw new ArgumentException($"Product with ID {id} doesn't exist in the inventory");
                 }
 
-                if (_cart != null)
-                {
-                    _cart.RemoveLine(product);
-                }
+                _cart?.RemoveLine(product);
 
                 _productRepository.DeleteProduct(id);
-
             }
             catch (ArgumentNullException ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                Console.WriteLine($"An error occured while deleting the product: {ex.Message}");
-            } 
-
+                Console.WriteLine($"An error occurred while deleting the product: {ex.Message}");
+            }
         }
     }
 }
