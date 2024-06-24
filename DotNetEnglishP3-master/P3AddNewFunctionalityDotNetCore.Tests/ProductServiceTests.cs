@@ -166,6 +166,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
         [Theory]
         [InlineData("100.00", "en-US")]
+        [InlineData("100,00", "fr-FR")]
         public void SaveProduct_ShouldConvertViewModelToEntityAndSave(string price, string culture)
         {
             // Arrange

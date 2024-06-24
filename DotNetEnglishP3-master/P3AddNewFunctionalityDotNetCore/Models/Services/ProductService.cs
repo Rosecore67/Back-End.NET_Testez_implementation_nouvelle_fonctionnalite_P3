@@ -102,7 +102,7 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
 
             if (product.Price.Contains(","))
             {
-                price = double.Parse(product.Price.Replace(",", "."));
+                price = double.Parse(product.Price.Replace(",", "."),CultureInfo.InvariantCulture);
             }
             else
             {
