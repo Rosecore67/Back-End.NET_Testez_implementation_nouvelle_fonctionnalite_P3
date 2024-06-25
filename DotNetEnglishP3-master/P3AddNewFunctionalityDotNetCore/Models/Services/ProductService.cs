@@ -98,21 +98,10 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
 
         private static Product MapToProductEntity(ProductViewModel product)
         {
-            double price;
-
-            if (product.Price.Contains(","))
-            {
-                price = double.Parse(product.Price.Replace(",", "."),CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                price = double.Parse(product.Price);
-            }
-
             Product productEntity = new Product
             {
                 Name = product.Name,
-                Price = price,
+                Price = double.Parse(product.Price),
                 Quantity = Int32.Parse(product.Stock),
                 Description = product.Description,
                 Details = product.Details
@@ -122,27 +111,15 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
 
         public void DeleteProduct(int id)
         {
-            try
-            {
-                var product = GetProductById(id);
+            var product = GetProductById(id);
 
-                if (product == null)
-                {
-                    throw new ArgumentException($"Product with ID {id} doesn't exist in the inventory");
-                }
-
-                _cart?.RemoveLine(product);
-
-                _productRepository.DeleteProduct(id);
-            }
-            catch (ArgumentNullException ex)
+            if (product == null)
             {
-                Console.WriteLine(ex.Message);
+                throw new ArgumentException($"Product with ID {id} doesn't exist in the inventory");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred while deleting the product: {ex.Message}");
-            }
+
+            _cart?.RemoveLine(product);
+            _productRepository.DeleteProduct(id);
         }
     }
 }

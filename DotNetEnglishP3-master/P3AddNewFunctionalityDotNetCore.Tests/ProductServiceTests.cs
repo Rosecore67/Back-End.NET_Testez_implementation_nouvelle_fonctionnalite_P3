@@ -213,7 +213,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         }
 
         [Fact]
-        public void DeleteProduct_ShouldRemoveProductFromRepository()
+        public void DeleteProduct_ShouldRemoveProductFromRepositoryAndCart()
         {
             // Arrange
             var productId = 1;
@@ -228,9 +228,27 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             _productService.DeleteProduct(productId);
 
             // Assert
+            // Verify GetAllProducts was called
             _productRepositoryMock.Verify(repo => repo.GetAllProducts(), Times.Once);
+
+            // Verify DeleteProduct was called
             _productRepositoryMock.Verify(repo => repo.DeleteProduct(productId), Times.Once);
-            Assert.DoesNotContain(_cart.Lines, l => l.Product.Id == productId); // Verify the product is removed from the cart
+
+            // Verify the product is removed from the cart
+            Assert.DoesNotContain(_cart.Lines, l => l.Product.Id == productId);
+        }
+
+        [Fact]
+        public void DeleteProduct_ShouldThrowArgumentException_WhenProductDoesNotExist()
+        {
+            // Arrange
+            var productId = 1;
+            var allProducts = new List<Product>(); // Empty list to simulate product not existing
+            _productRepositoryMock.Setup(repo => repo.GetAllProducts()).Returns(allProducts);
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _productService.DeleteProduct(productId));
+            Assert.Equal($"Product with ID {productId} doesn't exist in the inventory", exception.Message);
         }
     }
 }
