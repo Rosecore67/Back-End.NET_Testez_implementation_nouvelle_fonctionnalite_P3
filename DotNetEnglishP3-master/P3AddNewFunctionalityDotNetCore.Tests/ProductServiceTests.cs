@@ -222,19 +222,14 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var allProducts = new List<Product> { testProduct };
             _productRepositoryMock.Setup(repo => repo.GetAllProducts()).Returns(allProducts);
 
-            _cart.AddItem(testProduct, 1); // Add the product to the cart
+            _cart.AddItem(testProduct, 1);
 
             // Act
             _productService.DeleteProduct(productId);
 
             // Assert
-            // Verify GetAllProducts was called
             _productRepositoryMock.Verify(repo => repo.GetAllProducts(), Times.Once);
-
-            // Verify DeleteProduct was called
             _productRepositoryMock.Verify(repo => repo.DeleteProduct(productId), Times.Once);
-
-            // Verify the product is removed from the cart
             Assert.DoesNotContain(_cart.Lines, l => l.Product.Id == productId);
         }
 
