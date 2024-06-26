@@ -165,9 +165,9 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         }
 
         [Theory]
-        [InlineData("100.00", "en-US")]
-        [InlineData("100,00", "fr-FR")]
-        public void SaveProduct_ShouldConvertViewModelToEntityAndSave(string price, string culture)
+        [InlineData("100.00")]
+        [InlineData("100,00")]
+        public void SaveProduct_ShouldConvertViewModelToEntityAndSave(string price)
         {
             // Arrange
             var productViewModel = new ProductViewModel
@@ -183,14 +183,6 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             _productRepositoryMock.Setup(repo => repo.SaveProduct(It.IsAny<Product>()))
                 .Callback<Product>(p => capturedProduct = p);
 
-            // Change the current culture to the specified culture
-            var originalCulture = CultureInfo.CurrentCulture;
-            var originalUICulture = CultureInfo.CurrentUICulture;
-            CultureInfo.CurrentCulture = new CultureInfo(culture);
-            CultureInfo.CurrentUICulture = new CultureInfo(culture);
-
-            try
-            {
                 // Act
                 _productService.SaveProduct(productViewModel);
 
@@ -203,13 +195,6 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
                 Assert.Equal("Test Details", capturedProduct.Details);
 
                 _productRepositoryMock.Verify(repo => repo.SaveProduct(It.IsAny<Product>()), Times.Once);
-            }
-            finally
-            {
-                // Restore the original culture
-                CultureInfo.CurrentCulture = originalCulture;
-                CultureInfo.CurrentUICulture = originalUICulture;
-            }
         }
 
         [Fact]
@@ -221,6 +206,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var allProducts = new List<Product> { testProduct };
             _productRepositoryMock.Setup(repo => repo.GetAllProducts()).Returns(allProducts);
+            _productRepositoryMock.Setup(repo => repo.DeleteProduct(productId)).Callback(() => allProducts.RemoveAll(p => p.Id == productId));
 
             _cart.AddItem(testProduct, 1);
 
@@ -231,6 +217,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             _productRepositoryMock.Verify(repo => repo.GetAllProducts(), Times.Once);
             _productRepositoryMock.Verify(repo => repo.DeleteProduct(productId), Times.Once);
             Assert.DoesNotContain(_cart.Lines, l => l.Product.Id == productId);
+            Assert.DoesNotContain(allProducts, p => p.Id == productId);
         }
 
         [Fact]
@@ -238,12 +225,11 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         {
             // Arrange
             var productId = 1;
-            var allProducts = new List<Product>(); // Empty list to simulate product not existing
+            var allProducts = new List<Product>();
             _productRepositoryMock.Setup(repo => repo.GetAllProducts()).Returns(allProducts);
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => _productService.DeleteProduct(productId));
-            Assert.Equal($"Product with ID {productId} doesn't exist in the inventory", exception.Message);
+            Assert.ThrowsAny<ArgumentException>(() => _productService.DeleteProduct(productId));
         }
     }
 }

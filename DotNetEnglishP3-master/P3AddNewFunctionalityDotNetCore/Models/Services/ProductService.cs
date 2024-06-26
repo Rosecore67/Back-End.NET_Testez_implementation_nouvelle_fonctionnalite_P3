@@ -97,10 +97,19 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
 
         private static Product MapToProductEntity(ProductViewModel product)
         {
+            double parsedPrice;
+            if (product.Price.Contains(","))
+            {
+                parsedPrice = double.Parse(product.Price, System.Globalization.CultureInfo.GetCultureInfo("fr-FR"));
+            }
+            else
+            {
+                parsedPrice = double.Parse(product.Price, System.Globalization.CultureInfo.InvariantCulture);
+            }
             Product productEntity = new Product
             {
                 Name = product.Name,
-                Price = double.Parse(product.Price),
+                Price = parsedPrice,
                 Quantity = Int32.Parse(product.Stock),
                 Description = product.Description,
                 Details = product.Details

@@ -99,22 +99,19 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var (productService, dbContext, cart) = InitializeServices();
             var productViewModel = CreateTestProductViewModel("Product for UPDATE integration test", "150", "10");
 
-            // Step 1: Create the product
             productService.SaveProduct(productViewModel);
 
             var product = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.NotNull(product);
 
             // Act
-            // Step 2: Add the product to the cart and update quantities
             cart.AddItem(product, 9);
             productService.UpdateProductQuantities();
 
             // Assert
-            // Step 3: Retrieve the product again to verify the update
             var updatedProduct = await dbContext.Product.FirstOrDefaultAsync(x => x.Name == productViewModel.Name);
             Assert.NotNull(updatedProduct);
-            Assert.Equal(1, updatedProduct.Quantity); // 10 initial stock - 9 removed by cart
+            Assert.Equal(1, updatedProduct.Quantity);
 
             // Clean up
             dbContext.Product.Remove(updatedProduct);
